@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 
 pub mod state;
+pub mod errors;
+pub mod instructions;
 
 // 声明程序ID
 declare_id!("CdH2ymLMr7RyYcd1nyDZm59DRv6JgrtzuAxoH7STFvnm");
