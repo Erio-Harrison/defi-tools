@@ -1,0 +1,733 @@
+{
+    "address": "CdH2ymLMr7RyYcd1nyDZm59DRv6JgrtzuAxoH7STFvnm",
+    "metadata": {
+        "name": "defi_tools",
+        "version": "0.1.0",
+        "spec": "0.1.0",
+        "description": "Created with Anchor"
+    },
+    "instructions": [
+        {
+            "name": "create_strategy",
+            "discriminator": [
+                152,
+                160,
+                107,
+                148,
+                245,
+                190,
+                127,
+                224
+            ],
+            "accounts": [
+                {
+                    "name": "owner",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_profile",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    117,
+                                    115,
+                                    101,
+                                    114
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "owner"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "strategy_config",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    115,
+                                    116,
+                                    114,
+                                    97,
+                                    116,
+                                    101,
+                                    103,
+                                    121
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "user_profile"
+                            },
+                            {
+                                "kind": "account",
+                                "path": "user_profile.strategy_counter",
+                                "account": "UserProfile"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "allocations",
+                    "type": {
+                        "vec": {
+                            "defined": {
+                                "name": "Allocation"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "rebalance_condition",
+                    "type": {
+                        "defined": {
+                            "name": "RebalanceCondition"
+                        }
+                    }
+                },
+                {
+                    "name": "max_slippage_bps",
+                    "type": "u16"
+                }
+            ]
+        },
+        {
+            "name": "deposit_funds",
+            "discriminator": [
+                202,
+                39,
+                52,
+                211,
+                53,
+                20,
+                250,
+                88
+            ],
+            "accounts": [
+                {
+                    "name": "owner",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_profile",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    117,
+                                    115,
+                                    101,
+                                    114
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "owner"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "strategy_config",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    115,
+                                    116,
+                                    114,
+                                    97,
+                                    116,
+                                    101,
+                                    103,
+                                    121
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "user_profile"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "strategy_id"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "strategy_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "execute_strategy",
+            "discriminator": [
+                164,
+                197,
+                251,
+                183,
+                219,
+                177,
+                85,
+                161
+            ],
+            "accounts": [
+                {
+                    "name": "owner",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_profile",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    117,
+                                    115,
+                                    101,
+                                    114
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "owner"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "strategy_config",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    115,
+                                    116,
+                                    114,
+                                    97,
+                                    116,
+                                    101,
+                                    103,
+                                    121
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "user_profile"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "strategy_id"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "strategy_id",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "initialize",
+            "discriminator": [
+                175,
+                175,
+                109,
+                31,
+                13,
+                152,
+                155,
+                237
+            ],
+            "accounts": [],
+            "args": []
+        },
+        {
+            "name": "initialize_user",
+            "discriminator": [
+                111,
+                17,
+                185,
+                250,
+                60,
+                122,
+                38,
+                254
+            ],
+            "accounts": [
+                {
+                    "name": "owner",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_profile",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    117,
+                                    115,
+                                    101,
+                                    114
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "owner"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "risk_level",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "rebalance_positions",
+            "discriminator": [
+                85,
+                238,
+                231,
+                145,
+                246,
+                8,
+                139,
+                252
+            ],
+            "accounts": [
+                {
+                    "name": "owner",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_profile",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    117,
+                                    115,
+                                    101,
+                                    114
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "owner"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "strategy_config",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    115,
+                                    116,
+                                    114,
+                                    97,
+                                    116,
+                                    101,
+                                    103,
+                                    121
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "user_profile"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "strategy_id"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "strategy_id",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "withdraw_funds",
+            "discriminator": [
+                241,
+                36,
+                29,
+                111,
+                208,
+                31,
+                104,
+                217
+            ],
+            "accounts": [
+                {
+                    "name": "owner",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_profile",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    117,
+                                    115,
+                                    101,
+                                    114
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "owner"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "strategy_config",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": [
+                                    115,
+                                    116,
+                                    114,
+                                    97,
+                                    116,
+                                    101,
+                                    103,
+                                    121
+                                ]
+                            },
+                            {
+                                "kind": "account",
+                                "path": "user_profile"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "strategy_id"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "strategy_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "u64"
+                }
+            ]
+        }
+    ],
+    "accounts": [
+        {
+            "name": "StrategyConfig",
+            "discriminator": [
+                103,
+                12,
+                123,
+                61,
+                47,
+                87,
+                129,
+                57
+            ]
+        },
+        {
+            "name": "UserProfile",
+            "discriminator": [
+                32,
+                37,
+                119,
+                205,
+                179,
+                180,
+                13,
+                194
+            ]
+        }
+    ],
+    "errors": [
+        {
+            "code": 6000,
+            "name": "Unauthorized",
+            "msg": "操作未授权"
+        },
+        {
+            "code": 6001,
+            "name": "InvalidRiskLevel",
+            "msg": "无效的风险等级，必须在1-5范围内"
+        },
+        {
+            "code": 6002,
+            "name": "InvalidStrategyId",
+            "msg": "无效的策略ID"
+        },
+        {
+            "code": 6003,
+            "name": "InvalidAllocation",
+            "msg": "无效的资产分配，总权重必须为10000基点(100%)"
+        },
+        {
+            "code": 6004,
+            "name": "InvalidSlippage",
+            "msg": "无效的滑点设置，必须在0-1000基点(0-10%)范围内"
+        },
+        {
+            "code": 6005,
+            "name": "StrategyPaused",
+            "msg": "策略已暂停"
+        },
+        {
+            "code": 6006,
+            "name": "InsufficientFunds",
+            "msg": "资金不足"
+        },
+        {
+            "code": 6007,
+            "name": "SlippageExceeded",
+            "msg": "交易滑点超过最大允许值"
+        },
+        {
+            "code": 6008,
+            "name": "IncompatibleProtocol",
+            "msg": "协议不兼容"
+        },
+        {
+            "code": 6009,
+            "name": "ProtocolNotRegistered",
+            "msg": "协议未注册"
+        },
+        {
+            "code": 6010,
+            "name": "OperationTimeout",
+            "msg": "操作超时"
+        },
+        {
+            "code": 6011,
+            "name": "MathError",
+            "msg": "数学错误"
+        },
+        {
+            "code": 6012,
+            "name": "PositionNotFound",
+            "msg": "头寸不存在"
+        },
+        {
+            "code": 6013,
+            "name": "RebalanceConditionNotMet",
+            "msg": "再平衡条件未满足"
+        },
+        {
+            "code": 6014,
+            "name": "EmergencyModeActive",
+            "msg": "紧急模式已激活"
+        }
+    ],
+    "types": [
+        {
+            "name": "Allocation",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "protocol",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "asset",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "target_weight_bps",
+                        "type": "u16"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "RebalanceCondition",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "time_interval_seconds",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "max_deviation_bps",
+                        "type": "u16"
+                    },
+                    {
+                        "name": "auto_rebalance",
+                        "type": "bool"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "StrategyConfig",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "owner",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "strategy_id",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "allocations",
+                        "type": {
+                            "vec": {
+                                "defined": {
+                                    "name": "Allocation"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "rebalance_condition",
+                        "type": {
+                            "defined": {
+                                "name": "RebalanceCondition"
+                            }
+                        }
+                    },
+                    {
+                        "name": "created_at",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "last_executed_at",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "max_slippage_bps",
+                        "type": "u16"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "UserProfile",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "owner",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "risk_level",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "strategy_counter",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "vault_bump",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "last_activity",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "total_value_lamports",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "is_paused",
+                        "type": "bool"
+                    }
+                ]
+            }
+        }
+    ]
+}
