@@ -7,6 +7,13 @@
 
 ## 功能特性
 
+### 示例图
+
+![example1](assets/example1.png)
+![example2](assets/example2.png)
+![example3](assets/example3.png)
+![example4](assets/example4.png)
+
 ### 🚀 核心功能
 - 多协议资产配置（Raydium/Solend/Orca/Mango）
 - 智能风险等级评估（1-5级）
