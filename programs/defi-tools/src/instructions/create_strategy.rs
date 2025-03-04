@@ -1,12 +1,12 @@
-use anchor_lang::prelude::*;
-use crate::state::*;
 use crate::errors::ErrorCode;
+use crate::state::*;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct CreateStrategy<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    
+
     #[account(
         mut,
         seeds = [b"user", owner.key().as_ref()],
@@ -14,7 +14,7 @@ pub struct CreateStrategy<'info> {
         constraint = user_profile.owner == owner.key() @ ErrorCode::Unauthorized
     )]
     pub user_profile: Account<'info, UserProfile>,
-    
+
     #[account(
         init,
         payer = owner,
@@ -28,36 +28,37 @@ pub struct CreateStrategy<'info> {
         bump
     )]
     pub strategy_config: Account<'info, StrategyConfig>,
-    
+
     pub system_program: Program<'info, System>,
 }
 
 pub fn process(
-    ctx: Context<CreateStrategy>, 
+    ctx: Context<CreateStrategy>,
     allocations: Vec<Allocation>,
     rebalance_condition: RebalanceCondition,
-    max_slippage_bps: u16
+    max_slippage_bps: u16,
 ) -> Result<()> {
     // 验证资产分配
     let mut total_weight = 0;
     for allocation in allocations.iter() {
         total_weight += allocation.target_weight_bps;
     }
-    
+
     // 确保总权重为10000基点 (100%)
     if total_weight != 10000 {
         return Err(ErrorCode::InvalidAllocation.into());
     }
-    
+
     // 验证滑点设置
-    if max_slippage_bps > 1000 { // 最大10%
+    if max_slippage_bps > 1000 {
+        // 最大10%
         return Err(ErrorCode::InvalidSlippage.into());
     }
-    
+
     let user_profile = &mut ctx.accounts.user_profile;
     let strategy_config = &mut ctx.accounts.strategy_config;
     let clock = Clock::get()?;
-    
+
     // 设置策略配置
     strategy_config.owner = ctx.accounts.owner.key();
     strategy_config.strategy_id = user_profile.strategy_counter;
@@ -66,13 +67,13 @@ pub fn process(
     strategy_config.created_at = clock.unix_timestamp;
     strategy_config.last_executed_at = 0;
     strategy_config.max_slippage_bps = max_slippage_bps;
-    
+
     // 增加用户的策略计数器
     user_profile.strategy_counter += 1;
     user_profile.last_activity = clock.unix_timestamp;
-    
+
     msg!("策略已创建，ID: {}", strategy_config.strategy_id);
-    
+
     Ok(())
 }
 
@@ -139,7 +140,9 @@ mod tests {
 
     // 模拟 Clock::get 函数
     fn get_clock() -> Result<Clock> {
-        Ok(Clock { unix_timestamp: 1234567890 }) // 默认时间戳
+        Ok(Clock {
+            unix_timestamp: 1234567890,
+        }) // 默认时间戳
     }
 
     // 模拟 msg! 宏
@@ -158,19 +161,19 @@ mod tests {
         for allocation in allocations.iter() {
             total_weight += allocation.target_weight_bps;
         }
-        
+
         if total_weight != 10000 {
             return Err(ErrorCode::InvalidAllocation);
         }
-        
+
         if max_slippage_bps > 1000 {
             return Err(ErrorCode::InvalidSlippage);
         }
-        
+
         let user_profile = &mut ctx.accounts.user_profile;
         let strategy_config = &mut ctx.accounts.strategy_config;
         let clock = get_clock()?;
-        
+
         strategy_config.owner = ctx.accounts.owner;
         strategy_config.strategy_id = user_profile.strategy_counter;
         strategy_config.allocations = allocations;
@@ -178,12 +181,12 @@ mod tests {
         strategy_config.created_at = clock.unix_timestamp;
         strategy_config.last_executed_at = 0;
         strategy_config.max_slippage_bps = max_slippage_bps;
-        
+
         user_profile.strategy_counter += 1;
         user_profile.last_activity = clock.unix_timestamp;
-        
+
         msg(&format!("策略已创建，ID: {}", strategy_config.strategy_id));
-        
+
         Ok(())
     }
 
@@ -218,13 +221,22 @@ mod tests {
         };
 
         let allocations = vec![
-            Allocation { target_weight_bps: 5000 },
-            Allocation { target_weight_bps: 5000 },
+            Allocation {
+                target_weight_bps: 5000,
+            },
+            Allocation {
+                target_weight_bps: 5000,
+            },
         ];
         let rebalance_condition = RebalanceCondition::TimeBased(86400); // 每天
         let max_slippage_bps = 500; // 5%
 
-        let result = process(&mut ctx, allocations.clone(), rebalance_condition.clone(), max_slippage_bps);
+        let result = process(
+            &mut ctx,
+            allocations.clone(),
+            rebalance_condition.clone(),
+            max_slippage_bps,
+        );
         assert!(result.is_ok());
 
         let user_profile = &ctx.accounts.user_profile;
@@ -275,8 +287,12 @@ mod tests {
         };
 
         let allocations = vec![
-            Allocation { target_weight_bps: 4000 },
-            Allocation { target_weight_bps: 5000 }, // 总和 9000 < 10000
+            Allocation {
+                target_weight_bps: 4000,
+            },
+            Allocation {
+                target_weight_bps: 5000,
+            }, // 总和 9000 < 10000
         ];
         let rebalance_condition = RebalanceCondition::TimeBased(86400);
         let max_slippage_bps = 500;
@@ -321,8 +337,12 @@ mod tests {
         };
 
         let allocations = vec![
-            Allocation { target_weight_bps: 5000 },
-            Allocation { target_weight_bps: 5000 },
+            Allocation {
+                target_weight_bps: 5000,
+            },
+            Allocation {
+                target_weight_bps: 5000,
+            },
         ];
         let rebalance_condition = RebalanceCondition::TimeBased(86400);
         let max_slippage_bps = 1500; // 15% > 10%
@@ -367,21 +387,46 @@ mod tests {
         };
 
         let allocations = vec![
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
-            Allocation { target_weight_bps: 1000 },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
+            Allocation {
+                target_weight_bps: 1000,
+            },
         ];
         let rebalance_condition = RebalanceCondition::TimeBased(86400);
         let max_slippage_bps = 500;
 
-        let result = process(&mut ctx, allocations.clone(), rebalance_condition.clone(), max_slippage_bps);
+        let result = process(
+            &mut ctx,
+            allocations.clone(),
+            rebalance_condition.clone(),
+            max_slippage_bps,
+        );
         assert!(result.is_ok());
 
         let user_profile = &ctx.accounts.user_profile;
@@ -422,13 +467,22 @@ mod tests {
         };
 
         let allocations = vec![
-            Allocation { target_weight_bps: 5000 },
-            Allocation { target_weight_bps: 5000 },
+            Allocation {
+                target_weight_bps: 5000,
+            },
+            Allocation {
+                target_weight_bps: 5000,
+            },
         ];
         let rebalance_condition = RebalanceCondition::TimeBased(86400);
         let max_slippage_bps = 0; // 最小滑点
 
-        let result = process(&mut ctx, allocations.clone(), rebalance_condition.clone(), max_slippage_bps);
+        let result = process(
+            &mut ctx,
+            allocations.clone(),
+            rebalance_condition.clone(),
+            max_slippage_bps,
+        );
         assert!(result.is_ok());
 
         let user_profile = &ctx.accounts.user_profile;
@@ -436,5 +490,240 @@ mod tests {
         assert_eq!(user_profile.strategy_counter, 1);
         assert_eq!(strategy_config.max_slippage_bps, 0);
         assert_eq!(strategy_config.created_at, 1234567890);
+    }
+
+    // 测试6: 分配总和超过 10000 bps
+    #[test]
+    fn test_allocation_exceeds_max() {
+        let owner_key = [1; 32];
+        let mut user_profile = UserProfile {
+            owner: owner_key,
+            strategy_counter: 0,
+            last_activity: 0,
+        };
+        let mut strategy_config = StrategyConfig {
+            owner: [0; 32],
+            strategy_id: 0,
+            allocations: vec![],
+            rebalance_condition: RebalanceCondition::TimeBased(0),
+            created_at: 0,
+            last_executed_at: 0,
+            max_slippage_bps: 0,
+        };
+        let mut ctx = Context {
+            accounts: CreateStrategyAccounts {
+                owner: owner_key,
+                user_profile,
+                strategy_config,
+            },
+            bumps: Bumps {
+                user_profile: 255,
+                strategy_config: 254,
+            },
+        };
+
+        let allocations = vec![
+            Allocation {
+                target_weight_bps: 6000,
+            },
+            Allocation {
+                target_weight_bps: 5000,
+            }, // 总和 11000 > 10000
+        ];
+        let rebalance_condition = RebalanceCondition::TimeBased(86400);
+        let max_slippage_bps = 500;
+
+        let result = process(&mut ctx, allocations, rebalance_condition, max_slippage_bps);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), ErrorCode::InvalidAllocation);
+    }
+
+    // 测试7: 单个分配项占满 10000 bps
+    #[test]
+    fn test_single_allocation_max() {
+        let owner_key = [1; 32];
+        let mut user_profile = UserProfile {
+            owner: owner_key,
+            strategy_counter: 0,
+            last_activity: 0,
+        };
+        let mut strategy_config = StrategyConfig {
+            owner: [0; 32],
+            strategy_id: 0,
+            allocations: vec![],
+            rebalance_condition: RebalanceCondition::TimeBased(0),
+            created_at: 0,
+            last_executed_at: 0,
+            max_slippage_bps: 0,
+        };
+        let mut ctx = Context {
+            accounts: CreateStrategyAccounts {
+                owner: owner_key,
+                user_profile,
+                strategy_config,
+            },
+            bumps: Bumps {
+                user_profile: 255,
+                strategy_config: 254,
+            },
+        };
+
+        let allocations = vec![
+            Allocation {
+                target_weight_bps: 10000,
+            }, // 单个全占比
+        ];
+        let rebalance_condition = RebalanceCondition::TimeBased(3600);
+        let max_slippage_bps = 1000; // 上限值
+
+        let result = process(
+            &mut ctx,
+            allocations.clone(),
+            rebalance_condition.clone(),
+            max_slippage_bps,
+        );
+        assert!(result.is_ok());
+        assert_eq!(
+            ctx.accounts.strategy_config.allocations[0].target_weight_bps,
+            10000
+        );
+    }
+
+    // 测试8: 无效的时间条件（0秒间隔）
+    #[test]
+    fn test_zero_time_condition() {
+        let owner_key = [1; 32];
+        let mut user_profile = UserProfile {
+            owner: owner_key,
+            strategy_counter: 0,
+            last_activity: 0,
+        };
+        let mut strategy_config = StrategyConfig {
+            owner: [0; 32],
+            strategy_id: 0,
+            allocations: vec![],
+            rebalance_condition: RebalanceCondition::TimeBased(0),
+            created_at: 0,
+            last_executed_at: 0,
+            max_slippage_bps: 0,
+        };
+        let mut ctx = Context {
+            accounts: CreateStrategyAccounts {
+                owner: owner_key,
+                user_profile,
+                strategy_config,
+            },
+            bumps: Bumps {
+                user_profile: 255,
+                strategy_config: 254,
+            },
+        };
+
+        let allocations = vec![Allocation {
+            target_weight_bps: 10000,
+        }];
+        let rebalance_condition = RebalanceCondition::TimeBased(0); // 0秒间隔
+        let max_slippage_bps = 500;
+
+        let result = process(&mut ctx, allocations, rebalance_condition, max_slippage_bps);
+        assert!(result.is_ok()); // 根据业务逻辑决定是否允许
+    }
+
+    // 测试9: 连续创建策略验证ID递增
+    #[test]
+    fn test_strategy_id_increment() {
+        let owner_key = [1; 32];
+        let mut user_profile = UserProfile {
+            owner: owner_key,
+            strategy_counter: 0,
+            last_activity: 0,
+        };
+        let mut strategy_config = StrategyConfig {
+            owner: [0; 32],
+            strategy_id: 0,
+            allocations: vec![],
+            rebalance_condition: RebalanceCondition::TimeBased(0),
+            created_at: 0,
+            last_executed_at: 0,
+            max_slippage_bps: 0,
+        };
+        let mut ctx = Context {
+            accounts: CreateStrategyAccounts {
+                owner: owner_key,
+                user_profile,
+                strategy_config,
+            },
+            bumps: Bumps {
+                user_profile: 255,
+                strategy_config: 254,
+            },
+        };
+
+        // 第一次创建
+        let _ = process(
+            &mut ctx,
+            vec![Allocation {
+                target_weight_bps: 10000,
+            }],
+            RebalanceCondition::TimeBased(3600),
+            500,
+        );
+        assert_eq!(ctx.accounts.user_profile.strategy_counter, 1);
+        assert_eq!(ctx.accounts.strategy_config.strategy_id, 0);
+
+        // 重置配置创建第二次
+        ctx.accounts.user_profile.strategy_counter = 1; // 模拟前一次操作后的状态
+        let result = process(
+            &mut ctx,
+            vec![Allocation {
+                target_weight_bps: 10000,
+            }],
+            RebalanceCondition::TimeBased(3600),
+            500,
+        );
+        assert!(result.is_ok());
+        assert_eq!(ctx.accounts.strategy_config.strategy_id, 1);
+    }
+
+    // 测试10: 验证last_executed_at初始值
+    #[test]
+    fn test_last_executed_at_initialization() {
+        let owner_key = [1; 32];
+        let mut user_profile = UserProfile {
+            owner: owner_key,
+            strategy_counter: 0,
+            last_activity: 0,
+        };
+        let mut strategy_config = StrategyConfig {
+            owner: [0; 32],
+            strategy_id: 0,
+            allocations: vec![],
+            rebalance_condition: RebalanceCondition::TimeBased(0),
+            created_at: 0,
+            last_executed_at: 999, // 初始非零值测试是否被重置
+            max_slippage_bps: 0,
+        };
+        let mut ctx = Context {
+            accounts: CreateStrategyAccounts {
+                owner: owner_key,
+                user_profile,
+                strategy_config,
+            },
+            bumps: Bumps {
+                user_profile: 255,
+                strategy_config: 254,
+            },
+        };
+
+        let result = process(
+            &mut ctx,
+            vec![Allocation {
+                target_weight_bps: 10000,
+            }],
+            RebalanceCondition::TimeBased(3600),
+            500,
+        );
+        assert!(result.is_ok());
+        assert_eq!(ctx.accounts.strategy_config.last_executed_at, 0);
     }
 }

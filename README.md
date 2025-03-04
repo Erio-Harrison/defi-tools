@@ -1,9 +1,10 @@
 # DeFi Tools on Solana
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Rust](https://img.shields.io/badge/Rust-1.65+-black.svg?logo=rust)](https://www.rust-lang.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.0+-3178C6.svg?logo=typescript)](https://www.typescriptlang.org/)
 
-跨协议DeFi资产管理工具，提供自动化策略执行、风险管理和组合再平衡功能。
+跨协议 DeFi 资产管理工具，提供自动化策略执行、风险管理和组合再平衡功能。
 
 ## 功能特性
 

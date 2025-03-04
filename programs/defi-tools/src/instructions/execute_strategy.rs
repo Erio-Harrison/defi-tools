@@ -1,13 +1,13 @@
-use anchor_lang::prelude::*;
-use crate::state::*;
 use crate::errors::ErrorCode;
+use crate::state::*;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 #[instruction(strategy_id: u64)]
 pub struct ExecuteStrategy<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    
+
     #[account(
         mut,
         seeds = [b"user", owner.key().as_ref()],
@@ -16,7 +16,7 @@ pub struct ExecuteStrategy<'info> {
         constraint = !user_profile.is_paused @ ErrorCode::StrategyPaused
     )]
     pub user_profile: Account<'info, UserProfile>,
-    
+
     #[account(
         mut,
         seeds = [
@@ -28,7 +28,7 @@ pub struct ExecuteStrategy<'info> {
         constraint = strategy_config.owner == owner.key() @ ErrorCode::Unauthorized
     )]
     pub strategy_config: Account<'info, StrategyConfig>,
-    
+
     pub system_program: Program<'info, System>,
 }
 
@@ -36,16 +36,16 @@ pub fn process(ctx: Context<ExecuteStrategy>, strategy_id: u64) -> Result<()> {
     let user_profile = &mut ctx.accounts.user_profile;
     let strategy_config = &mut ctx.accounts.strategy_config;
     let clock = Clock::get()?;
-    
+
     // 更新最后执行时间
     strategy_config.last_executed_at = clock.unix_timestamp;
     user_profile.last_activity = clock.unix_timestamp;
-    
+
     // 这里是实际执行策略的逻辑
     // 在实际应用中，这里会调用各种DeFi协议的交互逻辑
-    
+
     msg!("策略已执行，ID: {}", strategy_id);
-    
+
     Ok(())
 }
 
@@ -93,7 +93,11 @@ mod tests {
     static mut TEST_TIMESTAMP: i64 = 1234567890;
 
     fn get_clock() -> Result<Clock> {
-        unsafe { Ok(Clock { unix_timestamp: TEST_TIMESTAMP }) }
+        unsafe {
+            Ok(Clock {
+                unix_timestamp: TEST_TIMESTAMP,
+            })
+        }
     }
 
     fn msg(_s: &str) {}
@@ -102,19 +106,21 @@ mod tests {
         let user_profile = &mut ctx.accounts.user_profile;
         let strategy_config = &mut ctx.accounts.strategy_config;
         let clock = get_clock()?;
-        
+
         strategy_config.last_executed_at = clock.unix_timestamp;
         user_profile.last_activity = clock.unix_timestamp;
-        
+
         msg(&format!("策略已执行，ID: {}", strategy_id));
-        
+
         Ok(())
     }
 
     // 测试1: 正常执行策略
     #[test]
     fn test_execute_strategy_success() {
-        unsafe { TEST_TIMESTAMP = 1234567890; } // 重置时间戳
+        unsafe {
+            TEST_TIMESTAMP = 1234567890;
+        } // 重置时间戳
 
         let owner_key = [1; 32];
         let mut user_profile = UserProfile {
@@ -151,7 +157,9 @@ mod tests {
     // 测试2: 不同 strategy_id 的正常执行
     #[test]
     fn test_execute_strategy_different_id() {
-        unsafe { TEST_TIMESTAMP = 1234567890; } // 重置时间戳
+        unsafe {
+            TEST_TIMESTAMP = 1234567890;
+        } // 重置时间戳
 
         let owner_key = [1; 32];
         let mut user_profile = UserProfile {
@@ -188,7 +196,9 @@ mod tests {
     // 测试3: 使用不同的时间戳
     #[test]
     fn test_execute_strategy_different_timestamp() {
-        unsafe { TEST_TIMESTAMP = 987654321; } // 设置不同时间戳
+        unsafe {
+            TEST_TIMESTAMP = 987654321;
+        } // 设置不同时间戳
 
         let owner_key = [1; 32];
         let mut user_profile = UserProfile {

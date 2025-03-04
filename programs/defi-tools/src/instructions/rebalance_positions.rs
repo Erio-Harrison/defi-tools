@@ -1,13 +1,13 @@
-use anchor_lang::prelude::*;
-use crate::state::*;
 use crate::errors::ErrorCode;
+use crate::state::*;
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 #[instruction(strategy_id: u64)]
 pub struct RebalancePositions<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    
+
     #[account(
         mut,
         seeds = [b"user", owner.key().as_ref()],
@@ -16,7 +16,7 @@ pub struct RebalancePositions<'info> {
         constraint = !user_profile.is_paused @ ErrorCode::StrategyPaused
     )]
     pub user_profile: Account<'info, UserProfile>,
-    
+
     #[account(
         mut,
         seeds = [
@@ -28,7 +28,7 @@ pub struct RebalancePositions<'info> {
         constraint = strategy_config.owner == owner.key() @ ErrorCode::Unauthorized
     )]
     pub strategy_config: Account<'info, StrategyConfig>,
-    
+
     pub system_program: Program<'info, System>,
 }
 
@@ -36,21 +36,22 @@ pub fn process(ctx: Context<RebalancePositions>, strategy_id: u64) -> Result<()>
     let user_profile = &mut ctx.accounts.user_profile;
     let strategy_config = &mut ctx.accounts.strategy_config;
     let clock = Clock::get()?;
-    
+
     // 验证再平衡条件
     let time_since_last_execution = clock.unix_timestamp - strategy_config.last_executed_at;
-    if time_since_last_execution < strategy_config.rebalance_condition.time_interval_seconds as i64 {
+    if time_since_last_execution < strategy_config.rebalance_condition.time_interval_seconds as i64
+    {
         return Err(ErrorCode::RebalanceConditionNotMet.into());
     }
-    
+
     // 更新最后执行时间
     strategy_config.last_executed_at = clock.unix_timestamp;
     user_profile.last_activity = clock.unix_timestamp;
-    
+
     // 在实际应用中，这里会调用再平衡头寸的逻辑
-    
+
     msg!("策略头寸已再平衡，ID: {}", strategy_id);
-    
+
     Ok(())
 }
 
@@ -103,7 +104,9 @@ mod tests {
     }
 
     fn get_clock() -> Result<Clock> {
-        Ok(Clock { unix_timestamp: 1234567890 })
+        Ok(Clock {
+            unix_timestamp: 1234567890,
+        })
     }
 
     fn msg(_s: &str) {}
@@ -112,17 +115,19 @@ mod tests {
         let user_profile = &mut ctx.accounts.user_profile;
         let strategy_config = &mut ctx.accounts.strategy_config;
         let clock = get_clock()?;
-        
+
         let time_since_last_execution = clock.unix_timestamp - strategy_config.last_executed_at;
-        if time_since_last_execution < strategy_config.rebalance_condition.time_interval_seconds as i64 {
+        if time_since_last_execution
+            < strategy_config.rebalance_condition.time_interval_seconds as i64
+        {
             return Err(ErrorCode::RebalanceConditionNotMet);
         }
-        
+
         strategy_config.last_executed_at = clock.unix_timestamp;
         user_profile.last_activity = clock.unix_timestamp;
-        
+
         msg(&format!("策略头寸已再平衡，ID: {}", strategy_id));
-        
+
         Ok(())
     }
 
@@ -138,7 +143,9 @@ mod tests {
         let mut strategy_config = StrategyConfig {
             owner: owner_key,
             last_executed_at: 1234564290, // 调整为 3600 秒前
-            rebalance_condition: RebalanceCondition { time_interval_seconds: 3600 },
+            rebalance_condition: RebalanceCondition {
+                time_interval_seconds: 3600,
+            },
         };
         let mut ctx = Context {
             accounts: RebalancePositionsAccounts {
@@ -174,7 +181,9 @@ mod tests {
         let mut strategy_config = StrategyConfig {
             owner: owner_key,
             last_executed_at: 1234567390,
-            rebalance_condition: RebalanceCondition { time_interval_seconds: 3600 },
+            rebalance_condition: RebalanceCondition {
+                time_interval_seconds: 3600,
+            },
         };
         let mut ctx = Context {
             accounts: RebalancePositionsAccounts {
@@ -206,7 +215,9 @@ mod tests {
         let mut strategy_config = StrategyConfig {
             owner: owner_key,
             last_executed_at: 1234564290,
-            rebalance_condition: RebalanceCondition { time_interval_seconds: 3600 },
+            rebalance_condition: RebalanceCondition {
+                time_interval_seconds: 3600,
+            },
         };
         let mut ctx = Context {
             accounts: RebalancePositionsAccounts {
@@ -237,7 +248,9 @@ mod tests {
         let mut strategy_config = StrategyConfig {
             owner: owner_key,
             last_executed_at: 0,
-            rebalance_condition: RebalanceCondition { time_interval_seconds: 3600 },
+            rebalance_condition: RebalanceCondition {
+                time_interval_seconds: 3600,
+            },
         };
         let mut ctx = Context {
             accounts: RebalancePositionsAccounts {
@@ -268,7 +281,9 @@ mod tests {
         let mut strategy_config = StrategyConfig {
             owner: owner_key,
             last_executed_at: 1234564290, // 调整为 3600 秒前
-            rebalance_condition: RebalanceCondition { time_interval_seconds: 3600 },
+            rebalance_condition: RebalanceCondition {
+                time_interval_seconds: 3600,
+            },
         };
         let mut ctx = Context {
             accounts: RebalancePositionsAccounts {
