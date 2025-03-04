@@ -1,6 +1,11 @@
+// app/page.tsx
 import { redirect } from 'next/navigation';
 
-// 从根路径重定向到仪表板页面
+// 在服务器端进行重定向
+export const metadata = {
+  title: 'Home Page',
+};
+
 export default function Home() {
   redirect('/dashboard');
 }
