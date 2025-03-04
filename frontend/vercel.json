@@ -10,10 +10,5 @@
         "dest": "/dashboard",
         "status": 200
       }
-    ],
-    "cacheControl": {
-      "static": {
-        "maxAge": 60
-      }
-    }
+    ]
   }
